@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {debounce} from 'lodash';
-import './App.scss';
 
 import usersFromServer from './api/users';
 import productsFromServer from './api/products';
