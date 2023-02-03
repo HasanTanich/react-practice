@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Category } from '../types/Category';
 import { User } from '../types/User';
 
@@ -7,21 +8,20 @@ type Props = {
   categories: Category[],
   selectedUser: string,
   selectedCategories: string,
-  searchInput: string,
   onSelectedCategories: (categories: string) => void,
   onSelectedUser: (name: string) => void,
   onSearchChange: (search: string) => void
 };
-const Filters = (
-  {
-    // eslint-disable-next-line max-len
-    users, categories, selectedUser, selectedCategories, searchInput, onSelectedUser, onSelectedCategories, onSearchChange,
-  } : Props,
-) => {
+const Filters = ({users, categories, selectedUser, selectedCategories, onSelectedUser, onSelectedCategories, onSearchChange} : Props,) => {
+  
+  const [search] = useSearchParams();
+  const [searchText, setSearchText] = useState(search.get('query') || '');
+
   const onSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     onSearchChange(e.target.value);
+    setSearchText(e.target.value);
   };
-
+  
   return (
     <nav className="panel">
       <p className="panel-heading">Filters</p>
@@ -29,7 +29,6 @@ const Filters = (
       <p className="panel-tabs has-text-weight-bold">
         <a
           data-cy="FilterAllUsers"
-          href="#/"
           className={`${!selectedUser ? 'is-active' : ''}`}
           onClick={() => onSelectedUser('')}
         >
@@ -40,7 +39,6 @@ const Filters = (
             <a
               key={user.id}
               data-cy="FilterUser"
-              href="#/"
               className={`${selectedUser === user.name ? 'is-active' : ''}`}
               onClick={() => onSelectedUser(user.name)}
             >
@@ -57,8 +55,8 @@ const Filters = (
             type="text"
             className="input"
             placeholder="Search"
-            value={searchInput}
             onChange={onSearch}
+            value={searchText}
           />
 
           <span className="icon is-left">
@@ -70,8 +68,11 @@ const Filters = (
               data-cy="ClearButton"
               type="button"
               className="delete"
-              style={{ display: !searchInput ? 'none' : 'block' }}
-              onClick={() => onSearchChange('')}
+              style={{ display: !searchText ? 'none' : 'block' }}
+              onClick={() => {
+                onSearchChange('');
+                setSearchText('');
+              }}
             />
           </span>
         </p>
@@ -79,7 +80,6 @@ const Filters = (
 
       <div className="panel-block is-flex-wrap-wrap">
         <a
-          href="#/"
           data-cy="AllCategories"
           className={`button is-success mr-6 ${selectedCategories ? 'is-outlined' : ''}`}
           onClick={() => onSelectedCategories('')}
@@ -97,7 +97,6 @@ const Filters = (
               onClick={() => (selectedCategories.includes(title)
                 ? onSelectedCategories(selectedCategories.replace(title, ''))
                 : onSelectedCategories(selectedCategories.concat(title)))}
-              href="#/"
             >
               {title}
             </a>
@@ -108,12 +107,12 @@ const Filters = (
       <div className="panel-block">
         <a
           data-cy="ResetAllButton"
-          href="#/"
           className="button is-link is-outlined is-fullwidth"
           onClick={() => {
             onSelectedUser('');
             onSelectedCategories('');
             onSearchChange('');
+            setSearchText('');
           }}
         >
           Reset all filters

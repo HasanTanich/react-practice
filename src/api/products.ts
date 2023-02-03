@@ -30,11 +30,6 @@ export default [
     categoryId: 3,
   },
   {
-    id: 7,
-    name: 'Beer',
-    categoryId: 2,
-  },
-  {
     id: 8,
     name: 'Socks',
     categoryId: 5,

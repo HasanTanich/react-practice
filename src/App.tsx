@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import {debounce} from 'lodash';
 import './App.scss';
 
-import Filters from './components/Filters';
-import ProductsTable from './components/ProductsTable';
 import usersFromServer from './api/users';
 import productsFromServer from './api/products';
 import categoriesFromServer from './api/categories';
-
+import Filters from './components/Filters';
+import ProductsTable from './components/ProductsTable';
 import { UpdatedProduct } from './types/UpdatedProduct';
 
 export const App: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState('');
-  const [searchInput, setSearchInput] = useState('');
   const [selectedCategories, setSelectedCategories] = useState('');
+  const [search, setSearch] = useSearchParams();
 
   const getFilteredProducts = () : UpdatedProduct[] => {
     let filteredProducts: UpdatedProduct[] = productsFromServer.map(product => {
       const category = categoriesFromServer.find(c => c.id === product.categoryId);
       const user = usersFromServer.find(u => u.id === category?.ownerId);
-
       return {
         id: product.id,
         name: product.name,
@@ -26,6 +26,7 @@ export const App: React.FC = () => {
         user,
       };
     });
+    const searchInput = search.get('query') || '';
 
     filteredProducts = selectedUser
       ? filteredProducts.filter(product => product.user?.name === selectedUser)
@@ -50,9 +51,20 @@ export const App: React.FC = () => {
     setSelectedCategories(categories);
   };
 
-  const onSearchChange = (text : string) => {
-    setSearchInput(text);
-  };
+  const onSearchChange = debounce((text : string) => {
+    
+    if(text.length === 0){
+      search.delete('query');
+      setSearch(search, {
+        replace: true,
+      });
+    }else{
+      search.set('query', text);
+      setSearch(search, {
+        replace: true,
+      });
+    }
+  }, 350);
 
   const filteredProducts : UpdatedProduct[] = getFilteredProducts();
 
@@ -67,7 +79,6 @@ export const App: React.FC = () => {
             categories={categoriesFromServer}
             selectedUser={selectedUser}
             selectedCategories={selectedCategories}
-            searchInput={searchInput}
             onSelectedUser={onSelectedUser}
             onSelectedCategories={onSelectedCategories}
             onSearchChange={onSearchChange}
